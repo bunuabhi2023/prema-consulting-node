@@ -70,9 +70,14 @@ const fetchProjectDetails = async (req, res) => {
 
     return res.status(201).json({projects})
   } catch (error) {
+    console.log({ error: error.response.status });
+    if(error.response.status === 401 || error.response.status === 500){
+      refreshAccessToken();
+    }
     console.error('Failed to fetch project details:', error.message);
     return null;
   }
+  
 };
 
 module.exports = {
