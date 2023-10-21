@@ -16,33 +16,55 @@ let accessToken;
 
 // Function to refresh the Zoho access token
 const refreshAccessToken = async () => {
-  try {
-    const response = await axios.post(ZOHO_AUTH_URL, null, {
-      params: {
-        refresh_token: ZOHO_CONFIG.REFRESH_TOKEN,
-        client_id: ZOHO_CONFIG.CLIENT_ID,
-        client_secret: ZOHO_CONFIG.CLIENT_SECRET,
-        grant_type: ZOHO_CONFIG.GRANT_TYPE,
-      },
-    });
-    accessToken = response.data.access_token;
-  } catch (error) {
-    console.error('Failed to refresh Zoho access token:', error.message);
-  }
+    try {
+      const response = await axios.post(ZOHO_AUTH_URL, null, {
+        params: {
+          refresh_token: ZOHO_CONFIG.REFRESH_TOKEN,
+          client_id: ZOHO_CONFIG.CLIENT_ID,
+          client_secret: ZOHO_CONFIG.CLIENT_SECRET,
+          grant_type: ZOHO_CONFIG.GRANT_TYPE,
+        },
+      });
+  
+      const { access_token, expires_in } = response.data;
+  
+      // Calculate the expiration time by adding 'expires_in' seconds to the current time
+      const expirationTime = new Date(Date.now() + expires_in * 1000);
+  
+      // Update the project model with the new token and calculated expiration time
+      const project = await Project.findOneAndUpdate({}, {
+        token: access_token,
+        expireTime: expirationTime,
+      }, { upsert: true, new: true });
+  
+      accessToken = project.token;
+    } catch (error) {
+      console.error('Failed to refresh Zoho access token:', error.message);
+    }
 };
+  
 
 // Function to fetch project details from Zoho Creator
 const fetchProjectDetails = async (req, res) => {
-  if (!accessToken) {
-    await refreshAccessToken();
-  }
-
-  try {
-    const response = await axios.get(ZOHO_API_URL, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-      },
-    });
+    if (!accessToken) {
+        const project = await Project.findOne();
+        if (!project) {
+          // If there's no project in the database, refresh the token
+          await refreshAccessToken();
+        } else if (project.expireTime <= new Date()) {
+          // If the token is expired, refresh it
+          await refreshAccessToken();
+        } else {
+          accessToken = project.token;
+        }
+      }
+    
+      try {
+        const response = await axios.get(ZOHO_API_URL, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        });
 
     const projects =  response.data.data;
 
