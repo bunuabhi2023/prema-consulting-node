@@ -7,14 +7,26 @@ const fieldforms = new mongoose.Schema(
             required:[true , 'user is required'],
             ref:'User'
         },
-        sowWorksheet:{
-            scopeFromReceivedDoc:{
-                type:String,
-            },
-            scopeFromInterview: {
-                type:String,
-            },
-       },
+        projectId:{     
+            type:String,
+            required:true ,
+        },
+        currentTab:{           
+            type:Number,
+            required:false,
+            default:0
+        },
+        scopeFromReceivedDocuments:{
+            type:String,
+            required:false,
+            maxLength:2000,
+        },
+        scopeFromInterview:{
+            type:String,
+            required:false,
+            maxLength:2000,
+        },
+        
         sowStatement: {
             standardScope:{
                 type:String,
@@ -92,7 +104,7 @@ const fieldforms = new mongoose.Schema(
                 required:false,
                 maxLength:255,
             },
-            title:{
+            owner:{
                 type:String,
                 required:false,
                 maxLength:255,
@@ -102,21 +114,21 @@ const fieldforms = new mongoose.Schema(
                 required:false,
                 maxLength:255,
             },
-            significance:{
+            intervieweeProvidedAccess:{
                 type:String,
                 required:false,
                 maxLength:255,
             },
             businessCardFront:{type:String,
-                    required:[true, 'document Image is required'],
-},
-            businessCardBack:{type:String,
-                    required:[true, 'document Image is required'],
-},
-            document:{
-                type:String,
-                    required:[true, 'document Image is required'],
-},
+                    required:false, 
+            },
+                        businessCardBack:{type:String,
+                                required:false, 
+            },
+                        document:{
+                            type:String,
+                                required:false, 
+            },
         }],
         propertyPurchesTime:{
             type:String,
@@ -200,118 +212,135 @@ const fieldforms = new mongoose.Schema(
                 }],
             }],
         }],
-        fieldSketch:[{
-            interiorDamageSketch:{ 
-                type:String,
-                maxLength:255,
-            },
-            roofSketch:{ 
+
+        interiorDamageSketch:{ 
+            image:{
                 type:String,
                 required:false,
-                maxLength:255,
-            }
-        }],
-        docOverView:[{
-            constructionEstimateAndPhoto:{ 
+            },
+            note:{
                 type:String,
                 maxLength:255,
+                required:false,
+            }
+        },
+        roofSketch:{ 
+            image:{
+                type:String,
+                required:false,        
+            },
+            note:{
+                type:String,
+                maxLength:255,
+                required:false,
+            }
+        },
+        docOverView:[{
+            doc:{ 
+                type:String,
+                required:false,
+                maxLength:5000,
+            },
+            constructionEstimate:{ 
+                type:String,
+                required:false,
+                maxLength:5000,
             },
             estimateAndPhotoSheet:{ 
                 type:String,
                 required:false,
-                maxLength:255,
+                maxLength:5000,
             },
             itemsList:{ 
                 type:String,
-                maxLength:255,
+                required:false,
+                maxLength:5000,
             }
         }],
         weatherData:{
             windData:{
                   type:String,
                   required: false,
-                  maxLength:255,
+                  maxLength:5000,
             },
             hailData:{
                   type:String,
                   required: false,
-                  maxLength:255,
+                  maxLength:5000,
             },
             tornadoData:{
                   type:String,
                   required: false,
-                  maxLength:255,
+                  maxLength:5000,
             },
             additionalData:{
                     type:String,
                     required: false,
-                    maxLength:255,
+                    maxLength:5000,
               },
        },
        lightningStrikeData:{
                type:String,
                required: false,
-               maxLength:255,
+               maxLength:5000,
         },
         floodData:[{
             gangaData:{ 
                 type:String,
                 required:false,
-                maxLength:255,
+                maxLength:5000,
             },
             waterMarkData:{ 
                 type:String,
                 required:false,
-                maxLength:255,
+                maxLength:5000,
             },
             gageData:{ 
                 type:String,
                 required:false,
-                maxLength:255,
+                maxLength:5000,
             },
             distanceData:{ 
                 type:String,
                 required:false,
-                maxLength:255,
+                maxLength:5000,
             }
         }],
-        aerialImageNotes:{
-            type:String,
-            required:false,
-            maxLength:255,
-
-        },
-        
-        aerialImages:[{type:String,
-                required:[true, 'document Image is required'],
-}],
-        realtorImageNotes:{
-            type:String,
-            required:false,
-            maxLength:255,
-
-        },
-        zillowImageNotes:{
-            type:String,
-            required:false,
-            maxLength:255,
-
-        },
-        redfinImageNotes:{
-            type:String,
-            required:false,
-            maxLength:255,
-
-        },
-        
-        historicalImages:[{
-            type:String,
-                required:[true, 'document Image is required'],
-}],
+            aerialImageNotes:{
+                type:String,
+                required:false,
+                maxLength:5000,
+    
+            },  
+            realtorImageNotes:{
+                type:String,
+                required:false,
+                maxLength:5000,
+    
+            },
+            googleOrBingImageNotes:{
+                type:String,
+                required:false,
+                maxLength:5000,
+    
+            },
+            zillowImageNotes:{
+                type:String,
+                required:false,
+                maxLength:5000,
+    
+            },
+      
+            redfinImageNotes:{
+                type:String,
+                required:false,
+                maxLength:5000,
+    
+            },
         soilData:{
             type:String,
             required:false,
-            maxLength:255,
+            maxLength:5000,
 
         },
     }
