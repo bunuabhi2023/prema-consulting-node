@@ -214,33 +214,18 @@ const fieldforms = new mongoose.Schema(
         }],
 
         interiorDamageSketch:{ 
-            image:{
                 type:String,
+                maxLength:500,
                 required:false,
-            },
-            note:{
-                type:String,
-                maxLength:255,
-                required:false,
-            }
+            
         },
-        roofSketch:{ 
-            image:{
+        roofSketch:{
                 type:String,
-                required:false,        
-            },
-            note:{
-                type:String,
-                maxLength:255,
+                maxLength:5000,
                 required:false,
-            }
+            
         },
         docOverView:[{
-            doc:{ 
-                type:String,
-                required:false,
-                maxLength:5000,
-            },
             constructionEstimate:{ 
                 type:String,
                 required:false,
