@@ -47,6 +47,6 @@ router.post("/create-column", auth, columnController.createColumn);
 
 //Tab route//
 router.post("/create-comment", auth, commentController.createComment);
-router.get("/get-comments/:projectId", commentController.getComment);
+router.get("/get-comments/:projectId/:fieldName", commentController.getComment);
 
 module.exports = router;
