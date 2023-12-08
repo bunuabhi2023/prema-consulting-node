@@ -19,9 +19,9 @@ exports.createComment = async(req, res) =>{
 
 exports.getComment =  async(req, res) =>{
     try {
-        const {projectId} =  req.params;
+        const {projectId, fieldName} =  req.params;
 
-        const comments = await Comment.find({projectId:projectId});
+        const comments = await Comment.find({projectId:projectId, fieldName:fieldName});
 
         return res.status(200).json({data:comments});
     } catch (error) {      
