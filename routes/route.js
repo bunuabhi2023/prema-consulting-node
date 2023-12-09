@@ -1,7 +1,7 @@
 const express  = require("express");
 const router = express.Router();
 const userController = require('../controllers/userController');
-const { FormPost, getForm, editFormByProjectId} = require("../controllers/formController");
+const { FormPost, getForm, editFormByProjectId, getlogs} = require("../controllers/formController");
 const folderController = require('../controllers/folderController');
 const projectController =require('../controllers/projectController');
 const imageController = require('../controllers/imageCOntroller');
@@ -31,6 +31,7 @@ router.get("/get-project", projectController.fetchProjectDetails);
 router.post("/project-details",auth, FormFelidsMulter,FormPost);
 router.put("/edit-form/:projectId",auth, FormFelidsMulter,editFormByProjectId);
 router.get("/get-form/:projectId",auth, getForm );
+router.get("/get-form/:projectId/:fieldName",auth, getlogs );
 
 
 //folder Route//
