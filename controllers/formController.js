@@ -6,7 +6,6 @@ exports.FormPost = async (req, res) => {
     let data = req.body;
     
     if (data?.interviewee) {
-      data.interviewee = JSON.parse(data.interviewee);
       data.interviewee = data?.interviewee.map((interviewee, index) => ({
         ...interviewee,
         businessCardBack: (s3FileUrls['businessCardBack[]'] && s3FileUrls['businessCardBack[]'][index]?.filename) || null,
@@ -15,11 +14,7 @@ exports.FormPost = async (req, res) => {
       }));
     }
 
-    if (data?.propertyStructure) data.propertyStructure = JSON.parse(data.propertyStructure);
-    if (data?.interviewStructure) data.interviewStructure = JSON.parse(data.interviewStructure);
-    if (data?.docOverView) data.docOverView = JSON.parse(data.docOverView);
-    if (data?.floodData) data.floodData = JSON.parse(data.floodData);
-
+   
     data.userId = req.user._id;
     const form = new FieldForm(data);
 
