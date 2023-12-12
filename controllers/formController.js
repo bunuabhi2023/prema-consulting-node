@@ -46,7 +46,7 @@ exports.FormPost = async (req, res) => {
         const logRecord = new Log({
           userId: req.user._id,
           projectId,
-          fieldName,
+          fieldName:fieldName.slice(1),
           fieldValue : obj,
         });
         await logRecord.save();
@@ -104,6 +104,14 @@ exports.editFormByProjectId = async (req, res) => {
     // Save the updated form
     const updatedForm = await existingForm.save();
 
+    const logRecord = new Log({
+      userId: req.user._id,
+      projectId:projectId,
+      fieldName:data.fieldName,
+      fieldValue : data.fieldValue,
+    });
+    await logRecord.save();
+
     return res.status(200).json({ message: "Form updated successfully", updatedForm });
 
   } catch (error) {
@@ -122,6 +130,21 @@ exports.getForm = async(req, res) =>{
       return res
       .status(200)
       .json({ data:form });
+
+  } catch (error) {
+    return res.status(500).json({ message: "Something went wrong" });
+  }
+}
+
+
+exports.getlogs = async(req, res) =>{
+  try {
+      const {projectId, fieldName} = req.params;
+     
+      const logs = await Log.find({projectId:projectId, fieldName:fieldName});
+      return res
+      .status(200)
+      .json({ data:logs });
 
   } catch (error) {
     return res.status(500).json({ message: "Something went wrong" });
