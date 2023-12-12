@@ -1,6 +1,5 @@
 const FieldForm = require("../models/fieldForm");
 const Log = require("../models/log");
-
 exports.FormPost = async (req, res) => {
   try {
     const s3FileUrls = req.files;
@@ -27,176 +26,46 @@ exports.FormPost = async (req, res) => {
     const savedForm = await form.save();
 
     const projectId = req.body.projectId;
-
-    const fieldsToLog = [
-      "scopeFromReceivedDocuments",
-      "scopeFromInterview",
-      "propertyAppraiserRecord",
-      "permitInformation", 
-      "topographicMap", 
-      "propertyPurchesTime", 
-      "dolPerInterviewee", 
-      "interviewRecord", 
-      "interiorDamageSketch", 
-      "roofSketch", 
-      "lightningStrikeData", 
-      "aerialImageNotes", 
-      "realtorImageNotes", 
-      "googleOrBingImageNotes", 
-      "zillowImageNotes", 
-      "redfinImageNotes", 
-      "soilData"
-    ];
-
-    for (const field of fieldsToLog) {
-      const fieldValue = data[field];
-      const logRecord = new Log({
-        userId: req.user._id,
-        projectId,
-        fieldName: field,
-        fieldValue,
-      });
-      await logRecord.save();
-    }
-
-     // Create log records for sowStatement keys
-    const sowStatement = JSON.parse(data.sowStatement || '{}');
-    for (const key in sowStatement) {
-      const fieldValue = sowStatement[key];
-      const fieldName = `sowStatement${key}`;
-      const logRecord = new Log({
-        userId: req.user._id,
-        projectId,
-        fieldName,
-        fieldValue,
-      });
-      await logRecord.save();
-    }
-
-    const propertyStructureString = data.propertyStructure || '[]';
-  
-    for (let index = 0; index < propertyStructureString.length; index++) {
-      const obj = propertyStructureString[index];
-      for (const key in obj) {
-        const fieldValue = obj[key];
-        const fieldName = `propertyStructure${index + 1}${key}`;
-        const logRecord = new Log({
-          userId: req.user._id,
-          projectId,
-          fieldName,
-          fieldValue,
-        });
-        await logRecord.save();
-      }
-    }  
-    
-    const intervieweeString = data.interviewee || '[]';
-  
-    for (let index = 0; index < intervieweeString.length; index++) {
-      const obj = intervieweeString[index];
-      for (const key in obj) {
-        const fieldValue = obj[key];
-        const fieldName = `interviewee${index + 1}${key}`;
-        const logRecord = new Log({
-          userId: req.user._id,
-          projectId,
-          fieldName,
-          fieldValue,
-        });
-        await logRecord.save();
-      }
-    }
-
-    const docOverViewString = data.docOverView || '[]';
-  
-    for (let index = 0; index < docOverViewString.length; index++) {
-      const obj = docOverViewString[index];
-      for (const key in obj) {
-        const fieldValue = obj[key];
-        const fieldName = `docOverView${index + 1}${key}`;
-        const logRecord = new Log({
-          userId: req.user._id,
-          projectId,
-          fieldName,
-          fieldValue,
-        });
-        await logRecord.save();
-      }
-    }
-     
-    const weatherData = JSON.parse(data.weatherData || '{}');
-    for (const key in weatherData) {
-      const fieldValue = weatherData[key];
-      const fieldName = `weatherData${key}`;
-      const logRecord = new Log({
-        userId: req.user._id,
-        projectId,
-        fieldName,
-        fieldValue,
-      });
-      await logRecord.save();
-    }
-
-    const floodDataString = data.floodData || '[]';
-  
-    for (let index = 0; index < floodDataString.length; index++) {
-      const obj = floodDataString[index];
-      for (const key in obj) {
-        const fieldValue = obj[key];
-        const fieldName = `floodData${index + 1}${key}`;
-        const logRecord = new Log({
-          userId: req.user._id,
-          projectId,
-          fieldName,
-          fieldValue,
-        });
-        await logRecord.save();
-      }
-    }
-
-
-    const interviewStructureString = data.interviewStructure || '[]';
-
-    for (let i = 0; i < interviewStructureString.length; i++) {
-      const obj = interviewStructureString[i];
-      processNestedStructure(`interviewStructure${i + 1}`, obj, projectId);
-    }
-
-    function processNestedStructure(prefix, obj, projectId) {
-      for (const key in obj) {
-        const value = obj[key];
-
-        if (Array.isArray(value)) {
-          value.forEach((item, index) => {
-            const newPrefix = `${prefix}${key}${index + 1}`;
-            processNestedStructure(newPrefix, item, projectId);
-          });
-        } else if (typeof value === 'object') {
-          const newPrefix = `${prefix}${key}`;
-          processNestedStructure(newPrefix, value, projectId);
-        } else { 
-          const fieldName = `${prefix}${key}`;
-          const logRecord = new Log({
-            userId: req.user._id,
-            projectId,
-            fieldName,
-            fieldValue: value,
-          });
-          logRecord.save();
+    async function processNestedStructure(prefix, obj, projectId, req, res) {
+      const fieldName = prefix;
+      if (Array.isArray(obj)) {
+        // If obj is an array, iterate through its elements
+        for (let i = 0; i < obj.length; i++) {
+          const arrayItem = obj[i];
+          await processNestedStructure(`${fieldName}.${i}`, arrayItem, projectId, req, res);
         }
+      } else if (typeof obj === 'object' && obj !== null) {
+        // If obj is an object, recursively process it
+        for (const key in obj) {
+          if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            await processNestedStructure(`${fieldName}.${key}`, obj[key], projectId, req, res);
+          }
+        }
+      } else {
+        // If obj is a primitive type, log the field
+        const logRecord = new Log({
+          userId: req.user._id,
+          projectId,
+          fieldName,
+          fieldValue : obj,
+        });
+        await logRecord.save();
       }
     }
+    
+    
+    
+     await processNestedStructure(``, data, projectId, req, res);
 
 
-    return res
-      .status(201)
-      .json({ message: "form created successfully", savedForm });
+    return res.status(201).json({ message: "form created successfully", savedForm });
 
   } catch (error) {
     console.error("Error during form submission:", error);
     return res.status(500).json({ message: "Something went wrong" });
   }
 };
+
 
 exports.editFormByProjectId = async (req, res) => {
   try {
