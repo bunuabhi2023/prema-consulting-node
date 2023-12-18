@@ -136,7 +136,7 @@ exports.getlogs = async(req, res) =>{
   try {
       const {projectId, fieldName} = req.params;
      
-      const logs = await Log.find({projectId:projectId, fieldName:fieldName});
+      const logs = await Log.find({projectId:projectId, fieldName:fieldName}).populate('userId', 'name');
       return res
       .status(200)
       .json({ data:logs });
