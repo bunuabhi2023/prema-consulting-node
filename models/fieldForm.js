@@ -42,11 +42,6 @@ const fieldforms = new mongoose.Schema(
 
         propertyData: {
             structures: [{
-                buildingType: {
-                    type: String,
-                    required: false,
-                    maxLength: 255,
-                },
                 numberOfStories: {
                     type: String,
                     required: false,
@@ -91,6 +86,11 @@ const fieldforms = new mongoose.Schema(
         },
 
         interviewee: [{
+               buildingType: {
+                    type: String,
+                    required: false,
+                    maxLength: 255,
+                },
             contactMethod: {
                 type: String,
                 required: false,
