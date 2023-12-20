@@ -62,11 +62,28 @@ exports.FormPost = async (req, res) => {
 };
 
 
+const updateField = (obj, keys, value) => {
+  let currentObj = obj;
+  for (let i = 0; i < keys.length - 1; i++) {
+    const key = keys[i];
+    if (Array.isArray(currentObj[key])) {
+      const index = parseInt(keys[i + 1], 10);
+      currentObj[key][index] = currentObj[key][index] || {};
+      currentObj = currentObj[key][index];
+      i++; // Skip the next index since we handled it
+    } else {
+      currentObj[key] = currentObj[key] || {};
+      currentObj = currentObj[key];
+    }
+  }
+  currentObj[keys[keys.length - 1]] = value;
+};
+
 exports.editFormByProjectId = async (req, res) => {
   try {
-    const projectId = req.params.projectId; // Assuming projectId is part of the URL parameters
+    const projectId = req.params.projectId;
     const s3FileUrls = req.files;
-    let data = req.body;
+    const { fieldName, value } = req.body;
 
     // Retrieve the existing form by projectId
     const existingForm = await FieldForm.findOne({ projectId });
@@ -75,35 +92,23 @@ exports.editFormByProjectId = async (req, res) => {
       return res.status(404).json({ message: "Form not found" });
     }
 
-    // Update the existing form data
-    if (data?.interviewee) {
-      data.interviewee = JSON.parse(data.interviewee);
-      data.interviewee = data?.interviewee.map((interviewee, index) => ({
-        ...interviewee,
-        businessCardBack: (s3FileUrls['businessCardBack[]'] && s3FileUrls['businessCardBack[]'][index]?.filename) || null,
-        businessCardFront: (s3FileUrls['businessCardFront[]'] && s3FileUrls['businessCardFront[]'][index]?.filename) || null,
-        document: (s3FileUrls['document[]'] && s3FileUrls['document[]'][index]?.filename) || null,
-      }));
-    }
+    // Parse fieldName to get keys
+    const keys = fieldName.split('.');
 
-    if (data?.propertyStructure) data.propertyStructure = JSON.parse(data.propertyStructure);
-    if (data?.interviewStructure) data.interviewStructure = JSON.parse(data.interviewStructure);
-    if (data?.docOverView) data.docOverView = JSON.parse(data.docOverView);
-    if (data?.floodData) data.floodData = JSON.parse(data.floodData); 
-    if (data?.sowStatement) data.sowStatement = JSON.parse(data.sowStatement);
-    if (data?.weatherData) data.weatherData = JSON.parse(data.weatherData);
-    data.userId = req.user._id;
-    // Update the existing form with the new data
-    Object.assign(existingForm, data);
+    // Update the existing form data
+    updateField(existingForm, keys, value);
+
+    // Update userId
+    existingForm.userId = req.user._id;
 
     // Save the updated form
     const updatedForm = await existingForm.save();
 
     const logRecord = new Log({
       userId: req.user._id,
-      projectId:projectId,
-      fieldName:data.fieldName,
-      fieldValue : data.fieldValue,
+      projectId: projectId,
+      fieldName: fieldName,
+      fieldValue: value,
     });
     await logRecord.save();
 
