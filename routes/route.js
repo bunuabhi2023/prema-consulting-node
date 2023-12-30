@@ -8,10 +8,11 @@ const imageController = require('../controllers/imageCOntroller');
 const tabController = require('../controllers/tabController');
 const columnController = require('../controllers/columnController');
 const commentController = require('../controllers/commentController');
+const imageCpationController = require('../controllers/imageCaptionController');
 
 
 const {auth, isAdmin, isVendor}  = require('../middlewares/Auth');
-const { imageSingleUpload , imageMultiUpload, FormFelidsMulter} = require("../middlewares/multer");
+const { imageSingleUpload , imageMultiUpload, FormFelidsMulter, upload} = require("../middlewares/multer");
 // Home 
 router.get("/", (req, res) =>{
     res.send("Welcome to premaconsulting Backend");
@@ -23,6 +24,7 @@ router.get("/my-profile", auth, userController.getMyProfile);//auth
 router.put("/update-user",imageSingleUpload, auth, userController.updateUser);
 router.post("/forget-password",  userController.forgotPassword);
 router.post("/change-password", auth, userController.updatePassword);
+router.post("/send-otp", userController.sendOTPEmail);
 
 //project route//
 router.get("/get-project", projectController.fetchProjectDetails);
@@ -49,5 +51,11 @@ router.post("/create-column", auth, columnController.createColumn);
 //Tab route//
 router.post("/create-comment", auth, commentController.createComment);
 router.get("/get-comments/:projectId/:fieldName", commentController.getComment);
+
+
+//Image Caption Route//
+router.post("/create-imagecaption", auth,  imageCpationController.CreateImageCatption);
+router.get("/get-caption-by-project/:projectId", auth, imageCpationController.getCaptionByProjectId);
+router.put("/edit-caption/:file", auth, imageCpationController.editCaptionByFile);
 
 module.exports = router;
