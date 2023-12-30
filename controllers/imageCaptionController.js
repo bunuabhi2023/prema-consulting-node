@@ -53,15 +53,14 @@ exports.getCaptionByProjectId = async (req, res) => {
 
 exports.editCaptionByFile = async (req, res) => {
     try {
-        const { file } = req.params;
-        const { projectId, caption, observation, evaluation } = req.body;
-        const existingImageCaption = await ImageCaption.findOne({ file });
+        const { file, projectId} = req.params;
+        const { caption, observation, evaluation } = req.body;
+        const existingImageCaption = await ImageCaption.findOne({ file:file, projectId:projectId });
 
         if (!existingImageCaption) {
             return res.status(404).json({ message: "Image caption not found for the given file" });
         }
 
-        existingImageCaption.projectId = projectId || existingImageCaption.projectId;
         existingImageCaption.caption = caption || existingImageCaption.caption;
         existingImageCaption.observation = observation || existingImageCaption.observation;
         existingImageCaption.evaluation = evaluation || existingImageCaption.evaluation;

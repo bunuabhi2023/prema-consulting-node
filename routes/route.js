@@ -30,7 +30,7 @@ router.post("/send-otp", userController.sendOTPEmail);
 router.get("/get-project", projectController.fetchProjectDetails);
 
 // form felids
-router.post("/project-details",auth, FormFelidsMulter,FormPost);
+router.post("/project-details",auth, FormPost);
 router.put("/edit-form/:projectId",auth, FormFelidsMulter,editFormByProjectId);
 router.get("/get-form/:projectId",auth, getForm );
 router.get("/get-form/:projectId/:fieldName",auth, getlogs );
@@ -56,6 +56,6 @@ router.get("/get-comments/:projectId/:fieldName", commentController.getComment);
 //Image Caption Route//
 router.post("/create-imagecaption", auth,  imageCpationController.CreateImageCatption);
 router.get("/get-caption-by-project/:projectId", auth, imageCpationController.getCaptionByProjectId);
-router.put("/edit-caption/:file", auth, imageCpationController.editCaptionByFile);
+router.put("/edit-caption/:file/:projectId", auth, imageCpationController.editCaptionByFile);
 
 module.exports = router;

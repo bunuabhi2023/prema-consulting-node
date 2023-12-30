@@ -2,7 +2,7 @@ const FieldForm = require("../models/fieldForm");
 const Log = require("../models/log");
 exports.FormPost = async (req, res) => {
   try {
-    const s3FileUrls = req.files;
+    
     let data = req.body;
     
     if (data?.interviewee) {
