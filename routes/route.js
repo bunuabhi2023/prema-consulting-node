@@ -28,6 +28,8 @@ router.post("/send-otp", userController.sendOTPEmail);
 
 //project route//
 router.get("/get-project", projectController.fetchProjectDetails);
+router.post("/create-folder-on-zoho", projectController.createFolderOnZoho);
+router.post("/upload-image-on-zoho",  projectController.uploadImageToZoho);
 
 // form felids
 router.post("/project-details",auth, FormPost);
