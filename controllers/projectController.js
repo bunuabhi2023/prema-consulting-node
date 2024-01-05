@@ -164,9 +164,60 @@ const uploadImageToZoho = async (req, res) => {
         
 };
 
+const getfilefolderlist = async (req, res) => {
+  if (!accessToken) {
+    await refreshAccessToken();
+  }
+  const {parent_id} = req.params;
+  const url = `https://www.zohoapis.com/workdrive/api/v1/files/${parent_id}/files`;
+
+  try {
+    const response = await axios.get(url, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    });
+    
+    console.log('Folder created successfully:', response.data);
+    return res.status(200).json({ data: response.data}); 
+  } catch (error) {
+    console.error('Error creating folder:', error.message);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+};
+
+const downloadfile = async (req, res) => {
+  if (!accessToken) {
+    await refreshAccessToken();
+  }
+  console.log(accessToken);
+  const {fileId} = req.params;
+  const url = `https://download.zoho.com/v1/workdrive/download/${fileId}`;
+
+  try {
+    const response = await axios.get(url, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      responseType: 'stream', // Set the responseType to 'stream' to handle file streams
+    });
+
+    // Set the appropriate headers for file download
+    res.setHeader('Content-disposition', `attachment; filename=${fileId}`);
+    res.setHeader('Content-type', response.headers['content-type']);
+
+    // Pipe the file stream directly to the response
+    response.data.pipe(res);
+  } catch (error) {
+    console.error('Error creating folder:', error.message);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+};
 module.exports = {
   fetchProjectDetails,
   createFolderOnZoho,
-  uploadImageToZoho
+  uploadImageToZoho,
+  getfilefolderlist,
+  downloadfile
 };
 

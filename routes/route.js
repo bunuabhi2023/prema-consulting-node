@@ -30,6 +30,8 @@ router.post("/send-otp", userController.sendOTPEmail);
 router.get("/get-project", projectController.fetchProjectDetails);
 router.post("/create-folder-on-zoho", projectController.createFolderOnZoho);
 router.post("/upload-image-on-zoho",  projectController.uploadImageToZoho);
+router.get("/get-file-folder-list/:parent_id", projectController.getfilefolderlist);
+router.get("/download-file/:fileId", projectController.downloadfile);
 
 // form felids
 router.post("/project-details",auth, FormPost);
