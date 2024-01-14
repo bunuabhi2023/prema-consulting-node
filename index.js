@@ -9,7 +9,7 @@ app.use('/uploads', express.static('uploads'));
 app.use(
     cors({
         origin: [
-            "http://localhost:3000",
+            "http://localhost:3000/login",
            "https://prema-consultancy.vercel.app"
           ],
           credentials: true,
