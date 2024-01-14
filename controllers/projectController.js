@@ -1,6 +1,11 @@
 const Project = require('../models/project');
 const axios = require('axios');
+const FormData = require('form-data');
+const multer = require('multer');
 
+
+const store = multer.memoryStorage();
+const upload = multer({ storage: store }).single('file');
 
 const ZOHO_CONFIG = {
   REFRESH_TOKEN: '1000.94b7dc3321e5d1058d7cbb61d31df95f.88e317338a595c51c3704ab1dfc7b747',
@@ -80,7 +85,139 @@ const fetchProjectDetails = async (req, res) => {
   
 };
 
+const createFolderOnZoho = async (req, res) => {
+  if (!accessToken) {
+    await refreshAccessToken();
+  }
+  const url = 'https://www.zohoapis.com/workdrive/api/v1/files';
+  const {name, parent_id} = req.body;
+  const payload = {
+    data: {
+      attributes: {
+        name: name,
+        parent_id: parent_id
+      },
+      type: 'files'
+    }
+  };
+
+  try {
+    const response = await axios.post(url, payload, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    });
+    
+    console.log('Folder created successfully:', response.data);
+    return res.status(200).json({message:'Folder created successfully', data: response.data}); 
+  } catch (error) {
+    console.error('Error creating folder:', error.message);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+};
+
+const uploadImageToZoho = async (req, res) => {
+  
+    upload(req, res, async (err) => {
+      if (err) {
+        console.error('Error uploading images:', err);
+        return res.status(500).json({ error: 'Error uploading images' });
+      }
+  
+      const content = req.file;
+  
+      try {
+        if (!accessToken) {
+          await refreshAccessToken();
+        }
+  
+        const url = 'https://www.zohoapis.com/workdrive/api/v1/upload';
+        if (!req.file) {
+          return res.status(400).json({ error: 'No file uploaded' });
+        }
+  
+        if (!req.body.filename || !req.body.parent_id) {
+          return res.status(400).json({ error: 'Missing filename or parent_id in the request body' });
+        }
+  
+        const { filename, parent_id } = req.body;
+  
+        const formData = new FormData();
+        formData.append('filename', filename);
+        formData.append('parent_id', parent_id);
+        formData.append('content', req.file.buffer, { filename: req.file.originalname });
+  
+        const response = await axios.post(url, formData, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            ...formData.getHeaders(),
+          },
+        });
+  
+        console.log('Image uploaded successfully:', response.data);
+        return res.status(200).json({ message: 'Image uploaded successfully', data: response.data });
+      } catch (error) {
+        console.error('Error uploading image:', error.message);
+        res.status(500).json({ error: 'Something went wrong' });
+      }
+    });
+        
+};
+
+const getfilefolderlist = async (req, res) => {
+  if (!accessToken) {
+    await refreshAccessToken();
+  }
+  const {parent_id} = req.params;
+  const url = `https://www.zohoapis.com/workdrive/api/v1/files/${parent_id}/files`;
+
+  try {
+    const response = await axios.get(url, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    });
+    
+    console.log('Folder created successfully:', response.data);
+    return res.status(200).json({ data: response.data}); 
+  } catch (error) {
+    console.error('Error creating folder:', error.message);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+};
+
+const downloadfile = async (req, res) => {
+  if (!accessToken) {
+    await refreshAccessToken();
+  }
+  console.log(accessToken);
+  const {fileId} = req.params;
+  const url = `https://download.zoho.com/v1/workdrive/download/${fileId}`;
+
+  try {
+    const response = await axios.get(url, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      responseType: 'stream', // Set the responseType to 'stream' to handle file streams
+    });
+
+    // Set the appropriate headers for file download
+    res.setHeader('Content-disposition', `attachment; filename=${fileId}`);
+    res.setHeader('Content-type', response.headers['content-type']);
+
+    // Pipe the file stream directly to the response
+    response.data.pipe(res);
+  } catch (error) {
+    console.error('Error creating folder:', error.message);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+};
 module.exports = {
   fetchProjectDetails,
+  createFolderOnZoho,
+  uploadImageToZoho,
+  getfilefolderlist,
+  downloadfile
 };
 

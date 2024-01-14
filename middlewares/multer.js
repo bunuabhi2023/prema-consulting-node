@@ -132,12 +132,9 @@ exports.imageMultiUpload = (req, res, next) => {
 
 const storage = multer.diskStorage({
   destination: async(req, file, cb) => {
-    const folderId = req.body.folderId; // Assuming folderId is passed in the request body
-    // const folder = await Folder.findById(folderId);
-    // const folderName = folder.name;
+    const folderId = req.body.folderId;
     const uploadPath = path.join(__dirname, '..', 'uploads');
 
-    // Check if the folder exists, if not, create it
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
     }
@@ -168,5 +165,16 @@ exports.FormFelidsMulter = (req, res, next) => {
 
     });
 };
+
+// const local = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "uploads/"); // Specify the destination folder for uploaded images
+//   },
+//   filename: function (req, file, cb) {
+//     cb(null, file.originalname); // Use the original name of the file as the filename
+//   },
+// });
+
+exports.upload = multer({ storage: storage });
 
 

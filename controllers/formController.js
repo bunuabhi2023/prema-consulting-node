@@ -2,15 +2,12 @@ const FieldForm = require("../models/fieldForm");
 const Log = require("../models/log");
 exports.FormPost = async (req, res) => {
   try {
-    const s3FileUrls = req.files;
+    
     let data = req.body;
     
     if (data?.interviewee) {
       data.interviewee = data?.interviewee.map((interviewee, index) => ({
         ...interviewee,
-        businessCardBack: (s3FileUrls['businessCardBack[]'] && s3FileUrls['businessCardBack[]'][index]?.filename) || null,
-        businessCardFront: (s3FileUrls['businessCardFront[]'] && s3FileUrls['businessCardFront[]'][index]?.filename) || null,
-        document: (s3FileUrls['document[]'] && s3FileUrls['document[]'][index]?.filename) || null,
       }));
     }
 

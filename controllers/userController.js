@@ -206,13 +206,19 @@ exports.deleteUser = async (req, res) => {
 
 
 exports.forgotPassword = async (req, res) => {
-  const { email, newPassword, confirmPassword } = req.body;
+  const { email, newPassword, confirmPassword, otp } = req.body;
 
   try {
     const user = await User.findOne({ email:email });
 
+
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
+    }
+    const savedOtp = user.mobile_otp;
+
+    if(otp != savedOtp){
+      return res.status(404).json({ message: 'Wrong Otp Entered' });
     }
 
     if(newPassword != confirmPassword){
@@ -267,6 +273,43 @@ exports.updatePassword = async (req, res) => {
   } catch (error) {
     console.error('Error during password update:', error);
     return res.status(500).json({ message: 'Something went wrong' });
+  }
+};
+
+
+exports.sendOTPEmail = async (req, res) => {
+  try {
+    const {email} = req.body;
+    const user = await User.findOne({email:email});
+    if(!user){
+      return res.status(404).json({message:"Email Not registerd with Us"});
+    }
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+        port: 587,
+        auth: {
+            user: "webienttechenv@gmail.com",
+            pass: "ljxugdpijagtxeda",
+        },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USERNAME,
+      to: email,
+      subject: 'OTP for Set Password',
+      text: `Your OTP for Set Password is: ${otp}`,
+    };
+
+   const mailsent = await transporter.sendMail(mailOptions);
+   if(mailsent){
+    user.mobile_otp = otp;
+    await user.save();
+    return res.status(200).json({message:"Otp sent to your email id."});
+   }
+  } catch (error) {
+    console.error('Error sending OTP email:', error);
+    throw error;
   }
 };
   
